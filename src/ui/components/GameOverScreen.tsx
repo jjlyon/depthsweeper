@@ -1,0 +1,3 @@
+import type { RunState } from '../../game/types';
+import { ITEM_BY_ID } from '../../game/data/items';
+export function GameOverScreen({run,onNew,onMenu}:{run:RunState;onNew:()=>void;onMenu:()=>void}){ return <main className="screen"><h1>{run.finalResult==='victory'?'Victory':'Defeat'}</h1><p>Final floor reached: {run.player.floor}</p><p>Final score: {run.player.score}</p><p>Gold: {run.player.gold}</p><h2>Items</h2><p>{run.player.items.map(i=>`${ITEM_BY_ID[i.itemId].name} x${i.stacks}`).join(', ') || 'None'}</p><button onClick={onNew}>New Run</button><button onClick={onMenu}>Main Menu</button></main>; }

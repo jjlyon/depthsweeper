@@ -1,0 +1,2 @@
+import type { LootItem } from '../../game/types';
+export function ItemCard({item,action,disabled,price}:{item:LootItem;action:()=>void;disabled?:boolean;price?:number}){ return <article className={`item-card ${item.rarity}`}><h3>{item.name}</h3><b>{item.rarity}</b><p>{item.description}</p>{price!==undefined&&<p className="price">{price} gold</p>}<button disabled={disabled} onClick={action}>{price!==undefined?'Buy':'Pick'}</button></article>; }

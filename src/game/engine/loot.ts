@@ -1,0 +1,8 @@
+import type { LootItem, Rarity, RunState, SaveData } from '../types';
+import { ITEMS } from '../data/items';
+import { random, pick } from './rng';
+import { countItem, hasItem } from './effects';
+const weights: Record<string, Record<Rarity,number>> = { low:{common:80,uncommon:20,rare:0,legendary:0}, mid:{common:55,uncommon:40,rare:5,legendary:0}, high:{common:35,uncommon:45,rare:18,legendary:2}, late:{common:20,uncommon:45,rare:30,legendary:5} };
+export function rarityForFloor(run:RunState, save:SaveData): Rarity { const w=run.player.floor<=2?weights.low:run.player.floor<=4?weights.mid:run.player.floor<=6?weights.high:weights.late; let roll=random(run.rng)*100; for(const r of ['common','uncommon','rare','legendary'] as Rarity[]){ roll-=w[r]; if(roll<=0){ if(r==='rare'&&!save.unlockedItems.includes('rare')) return 'uncommon'; if(r==='legendary'&&!save.unlockedItems.includes('legendary')) return 'uncommon'; return r; }} return 'common'; }
+export function canOffer(run:RunState,item:LootItem, save:SaveData){ if(item.rarity==='rare'&&!save.unlockedItems.includes('rare')) return false; if(item.rarity==='legendary'&&!save.unlockedItems.includes('legendary')) return false; const owned=countItem(run,item.id); return !owned || (item.maxStacks ?? 999) > owned; }
+export function generateRewards(run:RunState, save:SaveData): LootItem[] { const count=hasItem(run,'relic_satchel')?4:3; const out:LootItem[]=[]; let guard=0; while(out.length<count && guard++<200){ let rarity=rarityForFloor(run,save); let pool=ITEMS.filter(i=>i.rarity===rarity&&canOffer(run,i,save)&&!out.some(o=>o.id===i.id)); if(!pool.length) pool=ITEMS.filter(i=>canOffer(run,i,save)&&!out.some(o=>o.id===i.id)); if(pool.length) out.push(pick(run.rng,pool)); } return out; }
