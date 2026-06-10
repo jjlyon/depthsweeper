@@ -9,10 +9,19 @@ import { RewardScreen } from '../ui/components/RewardScreen';
 import { ShopScreen } from '../ui/components/ShopScreen';
 import { GameOverScreen } from '../ui/components/GameOverScreen';
 
+function readTileCoords(element: Element | null): { x: number; y: number } | null {
+ const tile = element?.closest<HTMLElement>('[data-x][data-y]');
+ if (!tile) return null;
+ const x = Number(tile.dataset.x);
+ const y = Number(tile.dataset.y);
+ return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+}
+
 export function App(){
- const [state,dispatch]=useReducer(gameReducer, initialGameState, s => ({...s, save: loadSave()})); const [hover,setHover]=useState<{x:number;y:number}|null>(null); const hoverRef=useRef<{x:number;y:number}|null>(null);
+ const [state,dispatch]=useReducer(gameReducer, initialGameState, s => ({...s, save: loadSave()})); const [hover,setHover]=useState<{x:number;y:number}|null>(null); const hoverRef=useRef<{x:number;y:number}|null>(null); const pointerRef=useRef<{x:number;y:number}|null>(null);
  useEffect(()=>{ saveData(state.save); },[state.save]);
- useEffect(()=>{ const onKey=(e:KeyboardEvent)=>{ if(e.key==='Escape') dispatch({type:'CANCEL_TARGETING'}); const target=hoverRef.current; if((e.key==='f'||e.key===' '||e.key==='F')&&target&&state.phase==='playing'){ e.preventDefault(); dispatch({type:'TOGGLE_FLAG',...target}); } if((e.key==='n'||e.key==='N')&&(state.phase==='menu'||state.phase==='gameOver')) dispatch({type:'START_RUN'}); if((e.key==='r'||e.key==='R')&&state.phase==='gameOver') dispatch({type:'START_RUN'}); }; window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey); },[state.phase]);
+ useEffect(()=>{ const onPointerMove=(event:PointerEvent)=>{ pointerRef.current={x:event.clientX,y:event.clientY}; const coords=readTileCoords(document.elementFromPoint(event.clientX,event.clientY)); if(coords){ hoverRef.current=coords; setHover(coords); } }; window.addEventListener('pointermove',onPointerMove,{capture:true}); return ()=>window.removeEventListener('pointermove',onPointerMove,{capture:true}); },[]);
+ useEffect(()=>{ const getCurrentTile=()=>{ const pointer=pointerRef.current; if(pointer){ const coords=readTileCoords(document.elementFromPoint(pointer.x,pointer.y)); if(coords) return coords; } return hoverRef.current; }; const onKey=(e:KeyboardEvent)=>{ if(e.key==='Escape') dispatch({type:'CANCEL_TARGETING'}); const target=getCurrentTile(); if((e.key==='f'||e.key===' '||e.key==='F')&&target&&state.phase==='playing'){ e.preventDefault(); e.stopPropagation(); dispatch({type:'TOGGLE_FLAG',...target}); return; } if((e.key==='n'||e.key==='N')&&(state.phase==='menu'||state.phase==='gameOver')) dispatch({type:'START_RUN'}); if((e.key==='r'||e.key==='R')&&state.phase==='gameOver') dispatch({type:'START_RUN'}); }; window.addEventListener('keydown',onKey,{capture:true}); return ()=>window.removeEventListener('keydown',onKey,{capture:true}); },[state.phase]);
  if(state.phase==='menu') return <MainMenu save={state.save} onStart={()=>dispatch({type:'START_RUN'})}/>;
  if(!state.run) return null;
  if(state.phase==='reward') return <RewardScreen run={state.run} choices={state.rewardChoices} onPick={itemId=>dispatch({type:'CHOOSE_REWARD',itemId})} onReroll={()=>dispatch({type:'REROLL_REWARD'})}/>;

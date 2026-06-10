@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { App } from '../../app/App';
 import { createTile } from '../../game/engine/board';
 import { Tile } from './Tile';
 
@@ -16,17 +17,36 @@ function renderTile(onFlag: () => void, onHover: () => void = () => {}) {
 }
 
 describe('Tile interactions', () => {
-  it('flags with F and Space while the tile has keyboard focus', () => {
-    let flags = 0;
-    const { button, cleanup } = renderTile(() => { flags += 1; });
+  it('flags the tile currently under the pointer with F and Space', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = createRoot(host);
 
     act(() => {
-      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', bubbles: true }));
-      button.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      root.render(<App />);
+    });
+    act(() => {
+      host.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(flags).toBe(2);
-    cleanup();
+    const tile = host.querySelector<HTMLButtonElement>('.tile.hidden')!;
+    const originalElementFromPoint = document.elementFromPoint;
+    Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: vi.fn(() => tile) });
+
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointermove', { clientX: 12, clientY: 18, bubbles: true }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', bubbles: true }));
+    });
+    expect(tile.textContent).toBe('⚑');
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    });
+    expect(tile.textContent).toBe('');
+
+    Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: originalElementFromPoint });
+    act(() => root.unmount());
+    host.remove();
   });
 
   it('flags with right pointer button without waiting for contextmenu', () => {
