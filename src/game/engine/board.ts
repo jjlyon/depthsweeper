@@ -1,5 +1,5 @@
 import type { BoardState, TileState } from '../types';
-export function createTile(x:number,y:number): TileState { return {x,y,kind:'normal',revealed:false,flagged:false,magneticFlagged:false,dangerMarked:false,adjacentMines:0,exploded:false,ghostNumber:null,fogged:false,forgotten:false,scanned:null,trappedTreasure:false}; }
+export function createTile(x:number,y:number): TileState { return {x,y,kind:'normal',revealed:false,flagged:false,magneticFlagged:false,dangerMarked:false,adjacentMines:0,exploded:false,ghostNumber:null,scannedStatus:null,fogged:false,forgotten:false,trappedTreasure:false}; }
 export function createBoard(width:number,height:number,mineCount:number): BoardState { return {width,height,mineCount,generated:false,tiles:Array.from({length:height},(_,y)=>Array.from({length:width},(_,x)=>createTile(x,y))),exitPlaced:false,exitAvailable:false,firstClick:true}; }
 export function inBounds(board:BoardState,x:number,y:number){ return x>=0&&y>=0&&x<board.width&&y<board.height; }
 export function getTile(board:BoardState,x:number,y:number){ return inBounds(board,x,y)?board.tiles[y][x]:null; }

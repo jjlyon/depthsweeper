@@ -3,11 +3,12 @@ export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
 export type FloorModifierId = 'none' | 'dense_veins' | 'unstable_ground' | 'echoing_depths' | 'fogged_numbers' | 'greedy_goblins' | 'cracked_lantern' | 'magnetic_ore';
 export type GamePhase = 'menu' | 'playing' | 'reward' | 'shop' | 'gameOver';
 export type TargetingMode = null | 'probe' | 'scan';
+export type ScannedStatus = 'mine' | 'safe' | 'treasure' | 'exit' | null;
 
 export type TileState = {
   x: number; y: number; kind: TileKind; revealed: boolean; flagged: boolean;
   magneticFlagged: boolean; dangerMarked: boolean; adjacentMines: number; exploded: boolean;
-  ghostNumber: number | null; fogged: boolean; forgotten: boolean; scanned: string | null;
+  ghostNumber: number | null; scannedStatus: ScannedStatus; fogged: boolean; forgotten: boolean;
   trappedTreasure: boolean;
 };
 export type BoardState = { width: number; height: number; mineCount: number; generated: boolean; tiles: TileState[][]; exitPlaced: boolean; exitAvailable: boolean; firstClick: boolean; };

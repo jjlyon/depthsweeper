@@ -1,6 +1,18 @@
 import type { TileState } from '../../game/types';
-export function Tile({tile,onClick,onFlag,onHover}:{tile:TileState;onClick:()=>void;onFlag:()=>void;onHover:()=>void}){
- let content=''; if(tile.flagged) content='⚑'; else if(tile.magneticFlagged) content='⚑'; else if(tile.dangerMarked) content='!'; else if(!tile.revealed && tile.ghostNumber!==null) content=String(tile.ghostNumber); else if(!tile.revealed && tile.scanned) content=tile.scanned[0].toUpperCase(); else if(tile.revealed){ if(tile.exploded) content='✸'; else if(tile.kind==='mine') content='✹'; else if(tile.kind==='exit') content='⇩'; else if(tile.forgotten) content='·'; else content=`${tile.fogged?'?':tile.adjacentMines || ''}${tile.kind==='treasure'?' ◆':''}`; }
- const cls=['tile',tile.revealed?'revealed':'hidden',tile.flagged?'flagged':'',tile.magneticFlagged?'magnetic':'',tile.dangerMarked?'danger':'',tile.exploded?'exploded':'',tile.kind,tile.ghostNumber!==null&&!tile.revealed?'ghost':'',tile.fogged?'fogged':'',tile.forgotten?'forgotten':'',`n${tile.adjacentMines}`].join(' ');
- return <button className={cls} onMouseEnter={onHover} onClick={onClick} onContextMenu={e=>{e.preventDefault(); onFlag();}}>{content}</button>;
+import { getTileClass, getTileContent } from './tileDisplay';
+
+export function Tile({ tile, onClick, onFlag, onHover }: { tile: TileState; onClick: () => void; onFlag: () => void; onHover: () => void }) {
+  return (
+    <button
+      className={getTileClass(tile)}
+      onMouseEnter={onHover}
+      onClick={onClick}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        onFlag();
+      }}
+    >
+      {getTileContent(tile)}
+    </button>
+  );
 }
