@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { gameReducer, initialGameState } from '../game/engine/run';
 import { loadSave, saveData } from '../game/engine/persistence';
 import { Board } from '../ui/components/Board';
@@ -10,13 +10,13 @@ import { ShopScreen } from '../ui/components/ShopScreen';
 import { GameOverScreen } from '../ui/components/GameOverScreen';
 
 export function App(){
- const [state,dispatch]=useReducer(gameReducer, initialGameState, s => ({...s, save: loadSave()})); const [hover,setHover]=useState<{x:number;y:number}|null>(null);
+ const [state,dispatch]=useReducer(gameReducer, initialGameState, s => ({...s, save: loadSave()})); const [hover,setHover]=useState<{x:number;y:number}|null>(null); const hoverRef=useRef<{x:number;y:number}|null>(null);
  useEffect(()=>{ saveData(state.save); },[state.save]);
- useEffect(()=>{ const onKey=(e:KeyboardEvent)=>{ if(e.key==='Escape') dispatch({type:'CANCEL_TARGETING'}); if((e.key==='f'||e.key===' '||e.key==='F')&&hover&&state.phase==='playing'){ e.preventDefault(); dispatch({type:'TOGGLE_FLAG',...hover}); } if((e.key==='n'||e.key==='N')&&(state.phase==='menu'||state.phase==='gameOver')) dispatch({type:'START_RUN'}); if((e.key==='r'||e.key==='R')&&state.phase==='gameOver') dispatch({type:'START_RUN'}); }; window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey); },[hover,state.phase]);
+ useEffect(()=>{ const onKey=(e:KeyboardEvent)=>{ if(e.key==='Escape') dispatch({type:'CANCEL_TARGETING'}); const target=hoverRef.current; if((e.key==='f'||e.key===' '||e.key==='F')&&target&&state.phase==='playing'){ e.preventDefault(); dispatch({type:'TOGGLE_FLAG',...target}); } if((e.key==='n'||e.key==='N')&&(state.phase==='menu'||state.phase==='gameOver')) dispatch({type:'START_RUN'}); if((e.key==='r'||e.key==='R')&&state.phase==='gameOver') dispatch({type:'START_RUN'}); }; window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey); },[state.phase]);
  if(state.phase==='menu') return <MainMenu save={state.save} onStart={()=>dispatch({type:'START_RUN'})}/>;
  if(!state.run) return null;
  if(state.phase==='reward') return <RewardScreen run={state.run} choices={state.rewardChoices} onPick={itemId=>dispatch({type:'CHOOSE_REWARD',itemId})} onReroll={()=>dispatch({type:'REROLL_REWARD'})}/>;
  if(state.phase==='shop') return <ShopScreen run={state.run} items={state.shopItems} onBuy={itemId=>dispatch({type:'BUY_ITEM',itemId})} onContinue={()=>dispatch({type:'CONTINUE_TO_NEXT_FLOOR'})}/>;
  if(state.phase==='gameOver') return <GameOverScreen run={state.run} onNew={()=>dispatch({type:'START_RUN'})} onMenu={()=>dispatch({type:'RETURN_TO_MENU'})}/>;
- return <main className="run"><Hud run={state.run} targeting={state.targetingMode} onTarget={mode=>dispatch({type:'SET_TARGETING',mode})}/><section className="play"><h1>Depthsweeper</h1>{state.targetingMode&&<p className="target-banner">Targeting {state.targetingMode}. Press Escape to cancel.</p>}<Board board={state.run.board} targeting={state.targetingMode} onHover={(x,y)=>setHover({x,y})} onReveal={(x,y)=>dispatch({type:'REVEAL_TILE',x,y})} onFlag={(x,y)=>dispatch({type:'TOGGLE_FLAG',x,y})} onChord={(x,y)=>dispatch({type:'CHORD_TILE',x,y})} onProbe={(x,y)=>dispatch({type:'USE_PROBE',x,y})} onScan={(x,y)=>dispatch({type:'USE_SCAN',x,y})}/></section><LogPanel log={state.log}/></main>;
+ return <main className="run"><Hud run={state.run} targeting={state.targetingMode} onTarget={mode=>dispatch({type:'SET_TARGETING',mode})}/><section className="play"><h1>Depthsweeper</h1>{state.targetingMode&&<p className="target-banner">Targeting {state.targetingMode}. Press Escape to cancel.</p>}<Board board={state.run.board} targeting={state.targetingMode} onHover={(x,y)=>{ const next={x,y}; hoverRef.current=next; setHover(next); }} onReveal={(x,y)=>dispatch({type:'REVEAL_TILE',x,y})} onFlag={(x,y)=>dispatch({type:'TOGGLE_FLAG',x,y})} onChord={(x,y)=>dispatch({type:'CHORD_TILE',x,y})} onProbe={(x,y)=>dispatch({type:'USE_PROBE',x,y})} onScan={(x,y)=>dispatch({type:'USE_SCAN',x,y})}/></section><LogPanel log={state.log}/></main>;
 }
