@@ -8,7 +8,6 @@ export function Tile({ tile, onClick, onFlag, onHover }: { tile: TileState; onCl
     if (event.button === 2) {
       event.preventDefault();
       event.stopPropagation();
-      onFlag();
     }
   };
 
@@ -27,6 +26,8 @@ export function Tile({ tile, onClick, onFlag, onHover }: { tile: TileState; onCl
       onContextMenu={(event) => {
         event.preventDefault();
         event.stopPropagation();
+        onHover();
+        onFlag();
       }}
     >
       {getTileContent(tile)}

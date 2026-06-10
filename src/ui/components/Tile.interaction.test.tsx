@@ -34,13 +34,13 @@ describe('Tile interactions', () => {
     Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: vi.fn(() => tile) });
 
     act(() => {
-      window.dispatchEvent(new PointerEvent('pointermove', { clientX: 12, clientY: 18, bubbles: true }));
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', bubbles: true }));
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 12, clientY: 18, bubbles: true }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', bubbles: true }));
     });
     expect(tile.textContent).toBe('⚑');
 
     act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
     });
     expect(tile.textContent).toBe('');
 
@@ -49,13 +49,13 @@ describe('Tile interactions', () => {
     host.remove();
   });
 
-  it('flags with right pointer button without waiting for contextmenu', () => {
+  it('flags from the context menu event for right-click support', () => {
     let flags = 0;
     let hovers = 0;
     const { button, cleanup } = renderTile(() => { flags += 1; }, () => { hovers += 1; });
 
     act(() => {
-      button.dispatchEvent(new PointerEvent('pointerdown', { button: 2, bubbles: true }));
+      button.dispatchEvent(new MouseEvent('contextmenu', { button: 2, bubbles: true }));
     });
 
     expect(flags).toBe(1);
