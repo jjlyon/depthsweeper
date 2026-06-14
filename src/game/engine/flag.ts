@@ -1,0 +1,5 @@
+import type { RunState } from '../types';
+import { getTile, neighbors, recomputeAdjacent } from './board';
+import { chance, pick } from './rng';
+import { hasItem } from './effects';
+export function toggleFlag(run:RunState,x:number,y:number,log:string[]){ const t=getTile(run.board,x,y); if(!t||t.revealed) return; if(t.magneticFlagged){ t.magneticFlagged=false; return; } if(t.flagged){ t.flagged=false; return; } if(run.player.flagsAvailable!==null && run.player.flagsAvailable<=0) return; t.flagged=true; if(run.player.flagsAvailable!==null) run.player.flagsAvailable--; if(hasItem(run,'trap_eater')&&!run.floorStats.trapEaterUsed&&t.kind==='mine'){ t.kind='normal'; run.board.mineCount--; t.flagged=false; run.floorStats.trapEaterUsed=true; recomputeAdjacent(run.board); log.push('Trap Eater consumed a flagged mine.'); } if(run.modifier.id==='magnetic_ore'&&chance(run.rng,.15)){ const opts=neighbors(run.board,x,y).filter(n=>!n.revealed&&!n.flagged&&!n.magneticFlagged); if(opts.length) pick(run.rng,opts).magneticFlagged=true; } }

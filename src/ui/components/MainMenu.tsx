@@ -1,0 +1,2 @@
+import type { SaveData } from '../../game/types';
+export function MainMenu({save,onStart}:{save:SaveData;onStart:()=>void}){ return <main className="screen menu"><h1>Depthsweeper</h1><p>A roguelike Minesweeper descent</p><button className="primary" onClick={onStart}>New Run</button><section><h2>Stats</h2><p>Total runs: {save.totalRuns}</p><p>Wins: {save.wins}</p><p>Deepest floor: {save.deepestFloor}</p><p>Total gold collected: {save.totalGoldCollected}</p></section></main>; }
